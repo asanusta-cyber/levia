@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "icons": "node scripts/generate-icons.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "i18n:table": "node --experimental-strip-types --no-warnings scripts/i18n-table.mjs"
   },
   "dependencies": {
     "dexie": "^4.4.2",
