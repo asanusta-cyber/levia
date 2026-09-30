@@ -1,18 +1,19 @@
 import type { Feeling, RootWant } from "./db";
 
-export const FEELINGS: Feeling[] = [
-  "тревога",
-  "гнев",
-  "обида",
-  "страх",
-  "раздражение",
-  "зависть",
-  "грусть",
-  "стыд",
-  "вина",
-  "бессилие",
-  "другое",
-];
+/** Временные русские подписи чувств. В подходе 2 их заменят словари i18n. */
+export const FEELING_LABEL_RU: Record<Feeling, string> = {
+  anxiety: "тревога",
+  anger: "гнев",
+  hurt: "обида",
+  fear: "страх",
+  frustration: "раздражение",
+  envy: "зависть",
+  sadness: "грусть",
+  shame: "стыд",
+  guilt: "вина",
+  helplessness: "бессилие",
+  other: "другое",
+};
 
 export interface RootWantOption {
   id: RootWant;

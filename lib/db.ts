@@ -1,19 +1,9 @@
 import Dexie, { Table } from "dexie";
+import { normalizeFeeling, type Feeling } from "./feelings";
+
+export type { Feeling } from "./feelings";
 
 export type RootWant = "approval" | "control" | "safety";
-
-export type Feeling =
-  | "тревога"
-  | "гнев"
-  | "обида"
-  | "страх"
-  | "раздражение"
-  | "зависть"
-  | "грусть"
-  | "стыд"
-  | "вина"
-  | "бессилие"
-  | "другое";
 
 export interface SessionQuestions {
   allowToBe: boolean;
@@ -42,21 +32,46 @@ class AppDB extends Dexie {
   sessions!: Table<Session, number>;
 
   constructor() {
+    // Имя базы — наследие первого названия приложения. Не менять: новое имя = новая
+    // пустая база, сессии пользователей останутся в старой.
     super("PauseDB");
     this.version(1).stores({
       sessions: "++id, createdAt",
     });
+    // v2: чувства хранятся кодами вместо русских слов. Upgrade идёт в одной
+    // versionchange-транзакции: либо переписываются все записи, либо ни одной.
+    this.version(2)
+      .stores({
+        sessions: "++id, createdAt",
+      })
+      .upgrade((tx) =>
+        tx
+          .table("sessions")
+          .toCollection()
+          .modify((s: Record<string, unknown>) => {
+            const n = normalizeFeeling(s.feeling, s.customFeeling);
+            s.feeling = n.feeling;
+            if (n.customFeeling !== undefined) s.customFeeling = n.customFeeling;
+          })
+      );
   }
 }
 
 let _db: AppDB | null = null;
 
 export function getDB(): AppDB {
-  if (typeof window === "undefined") {
-    throw new Error("Dexie is only available in the browser");
+  // Проверяем IndexedDB, а не window: на сервере его нет, а в тестах его даёт fake-indexeddb.
+  if (typeof indexedDB === "undefined") {
+    throw new Error("IndexedDB is only available in the browser");
   }
   if (!_db) _db = new AppDB();
   return _db;
+}
+
+/** Закрывает соединение и сбрасывает синглтон. Нужно тестам, чтобы переоткрыть базу. */
+export function closeDB(): void {
+  _db?.close();
+  _db = null;
 }
 
 export async function createSession(data: NewSession): Promise<number> {
@@ -141,6 +156,8 @@ export interface ImportResult {
 /**
  * Импорт с дедупликацией по createdAt (миллисекундная точность).
  * Невалидные записи и дубли считаются отдельно.
+ * Чувство каждой записи проходит через normalizeFeeling — так старые бэкапы
+ * с русскими словами превращаются в коды тем же словарём, что и миграция базы.
  */
 export async function importSessions(items: unknown): Promise<ImportResult> {
   if (!Array.isArray(items)) throw new Error("Ожидался массив сессий");
@@ -162,8 +179,8 @@ export async function importSessions(items: unknown): Promise<ImportResult> {
       duplicate += 1;
       continue;
     }
-    const { id: _ignore, ...rest } = raw;
-    toAdd.push(rest);
+    const { id: _ignore, feeling, customFeeling, ...rest } = raw;
+    toAdd.push({ ...rest, ...normalizeFeeling(feeling, customFeeling) });
     existingKeys.add(raw.createdAt);
   }
 
@@ -175,7 +192,10 @@ export async function importSessions(items: unknown): Promise<ImportResult> {
   return { added, duplicate, invalid };
 }
 
-function isValidSession(v: unknown): v is Session {
+/** Запись из файла: структура как у Session, но feeling ещё не нормализован. */
+type RawSession = Omit<Session, "feeling"> & { feeling: string };
+
+function isValidSession(v: unknown): v is RawSession {
   if (!v || typeof v !== "object") return false;
   const s = v as Record<string, unknown>;
   return (

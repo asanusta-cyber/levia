@@ -3,17 +3,11 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import {
-  countSessions,
-  exportAll,
-  importSessions,
-  type ImportResult,
-} from "@/lib/db";
+import { countSessions, importSessions, type ImportResult } from "@/lib/db";
+import { buildBackup, extractBackupSessions } from "@/lib/backup";
 import { ABOUT_TEXT, APP_NAME, APP_VERSION } from "@/lib/constants";
 import { backupFilename, pluralRu } from "@/lib/format";
 import { Toast, setToast } from "@/components/ui/Toast";
-
-const EXPORT_VERSION = 1;
 
 export default function SettingsPage() {
   const total = useLiveQuery(() => countSessions());
@@ -29,17 +23,7 @@ export default function SettingsPage() {
     if (exporting || !canExport) return;
     setExporting(true);
     try {
-      const sessions = await exportAll();
-      const payload = JSON.stringify(
-        {
-          version: EXPORT_VERSION,
-          exportedAt: Date.now(),
-          sessionCount: sessions.length,
-          sessions,
-        },
-        null,
-        2
-      );
+      const payload = JSON.stringify(await buildBackup(), null, 2);
       const blob = new Blob([payload], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -75,7 +59,7 @@ export default function SettingsPage() {
         return;
       }
 
-      const items = unwrapImport(parsed);
+      const items = extractBackupSessions(parsed);
       if (items === null) {
         setToast("Файл не распознан как бэкап Levia");
         return;
@@ -154,19 +138,6 @@ export default function SettingsPage() {
       </div>
     </>
   );
-}
-
-/**
- * Принимаем оба формата: «обёрнутый» (наш экспорт с meta) и сырой массив.
- * Возвращает массив записей или null, если структура не распознана.
- */
-function unwrapImport(parsed: unknown): unknown[] | null {
-  if (Array.isArray(parsed)) return parsed;
-  if (parsed && typeof parsed === "object") {
-    const obj = parsed as Record<string, unknown>;
-    if (Array.isArray(obj.sessions)) return obj.sessions;
-  }
-  return null;
 }
 
 const SESSION_FORMS: [string, string, string] = [
