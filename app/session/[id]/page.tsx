@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { deleteSession, getSession, type Session } from "@/lib/db";
-import { QUESTIONS, ROOT_WANT_LABEL } from "@/lib/constants";
+import { FEELING_LABEL_RU, QUESTIONS, ROOT_WANT_LABEL } from "@/lib/constants";
+import { feelingLabel } from "@/lib/feelings";
 import { formatDuration, formatFullDateTime } from "@/lib/format";
 import { Pill } from "@/components/ui/Pill";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -95,8 +96,7 @@ export default function SessionDetailPage({
         ? "text-muted"
         : "text-primary";
 
-  const feelingLabel =
-    s.feeling === "другое" && s.customFeeling ? s.customFeeling : s.feeling;
+  const label = feelingLabel(s.feeling, s.customFeeling, FEELING_LABEL_RU);
 
   return (
     <div className="flex flex-col gap-6">
@@ -121,7 +121,7 @@ export default function SessionDetailPage({
 
       <Section title="Чувство и хочу">
         <div className="flex flex-wrap gap-2">
-          <Pill>{feelingLabel}</Pill>
+          <Pill>{label}</Pill>
           {s.rootWant && <Pill>{ROOT_WANT_LABEL[s.rootWant]}</Pill>}
         </div>
       </Section>

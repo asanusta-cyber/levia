@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "exportedAt": 1756800000000,
+  "sessionCount": 12,
+  "sessions": [
+    {
+      "id": 1,
+      "createdAt": 1754000000000,
+      "durationSeconds": 312,
+      "situation": "Коллега перебил меня на встрече",
+      "feeling": "тревога",
+      "rootWant": "approval",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 7,
+      "intensityAfter": 4,
+      "reflection": "Плечи опустились"
+    },
+    {
+      "id": 2,
+      "createdAt": 1754090000000,
+      "durationSeconds": 245,
+      "situation": "Опоздал поезд",
+      "feeling": "гнев",
+      "rootWant": "control",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 8,
+      "intensityAfter": 5,
+      "reflection": ""
+    },
+    {
+      "id": 3,
+      "createdAt": 1754180000000,
+      "durationSeconds": 401,
+      "situation": "Друг не позвал на день рождения",
+      "feeling": "обида",
+      "rootWant": "approval",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 6,
+      "intensityAfter": 3,
+      "reflection": "Стало легче дышать"
+    },
+    {
+      "id": 4,
+      "createdAt": 1754270000000,
+      "durationSeconds": 198,
+      "situation": "Результаты анализов",
+      "feeling": "страх",
+      "rootWant": "safety",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 9,
+      "intensityAfter": 6,
+      "reflection": ""
+    },
+    {
+      "id": 5,
+      "createdAt": 1754360000000,
+      "durationSeconds": 150,
+      "situation": "Шум у соседей",
+      "feeling": "раздражение",
+      "rootWant": "control",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 5,
+      "intensityAfter": 5,
+      "reflection": "Ничего не изменилось"
+    },
+    {
+      "id": 6,
+      "createdAt": 1754450000000,
+      "durationSeconds": 275,
+      "situation": "Чужой успех в соцсетях",
+      "feeling": "зависть",
+      "rootWant": "approval",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 6,
+      "intensityAfter": 2,
+      "reflection": ""
+    },
+    {
+      "id": 7,
+      "createdAt": 1754540000000,
+      "durationSeconds": 520,
+      "situation": "Годовщина",
+      "feeling": "грусть",
+      "rootWant": null,
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 7,
+      "intensityAfter": 6,
+      "reflection": ""
+    },
+    {
+      "id": 8,
+      "createdAt": 1754630000000,
+      "durationSeconds": 233,
+      "situation": "Ошибся в отчёте",
+      "feeling": "стыд",
+      "rootWant": "approval",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 8,
+      "intensityAfter": 4,
+      "reflection": ""
+    },
+    {
+      "id": 9,
+      "createdAt": 1754720000000,
+      "durationSeconds": 301,
+      "situation": "Накричал на ребёнка",
+      "feeling": "вина",
+      "rootWant": "control",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 9,
+      "intensityAfter": 5,
+      "reflection": "Захотелось извиниться"
+    },
+    {
+      "id": 10,
+      "createdAt": 1754810000000,
+      "durationSeconds": 188,
+      "situation": "Очередь в поликлинике",
+      "feeling": "бессилие",
+      "rootWant": "safety",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 6,
+      "intensityAfter": 3,
+      "reflection": ""
+    },
+    {
+      "id": 11,
+      "createdAt": 1754900000000,
+      "durationSeconds": 266,
+      "situation": "Конец длинной недели",
+      "feeling": "другое",
+      "customFeeling": "усталость",
+      "rootWant": "control",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 7,
+      "intensityAfter": 4,
+      "reflection": ""
+    },
+    {
+      "id": 12,
+      "createdAt": 1754990000000,
+      "durationSeconds": 140,
+      "situation": "Сложно назвать",
+      "feeling": "другое",
+      "rootWant": "safety",
+      "questions": { "allowToBe": true, "canRelease": true, "readyToRelease": true, "whenNow": true },
+      "intensityBefore": 4,
+      "intensityAfter": 3,
+      "reflection": ""
+    }
+  ]
+}

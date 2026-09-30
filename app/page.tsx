@@ -9,7 +9,8 @@ import {
   lastSession,
   type Session,
 } from "@/lib/db";
-import { ROOT_WANT_LABEL } from "@/lib/constants";
+import { FEELING_LABEL_RU, ROOT_WANT_LABEL } from "@/lib/constants";
+import { feelingLabel } from "@/lib/feelings";
 import {
   daysWord,
   formatTodayHeading,
@@ -127,10 +128,11 @@ function LastSessionCard({ session, now }: { session: Session; now: Date }) {
   const delta = session.intensityAfter - session.intensityBefore;
   const deltaClass = delta < 0 ? "text-success-text" : "text-muted";
 
-  const feelingLabel =
-    session.feeling === "другое" && session.customFeeling
-      ? session.customFeeling
-      : session.feeling;
+  const label = feelingLabel(
+    session.feeling,
+    session.customFeeling,
+    FEELING_LABEL_RU
+  );
 
   return (
     <Link
@@ -147,7 +149,7 @@ function LastSessionCard({ session, now }: { session: Session; now: Date }) {
       </div>
       <div className="truncate text-sm">{session.situation}</div>
       <div className="flex flex-wrap gap-1.5">
-        <Pill>{feelingLabel}</Pill>
+        <Pill>{label}</Pill>
         {session.rootWant && <Pill>{ROOT_WANT_LABEL[session.rootWant]}</Pill>}
       </div>
     </Link>

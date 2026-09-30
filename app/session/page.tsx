@@ -86,7 +86,7 @@ export default function SessionPage() {
         situation: situation.trim(),
         feeling: feeling!,
         customFeeling:
-          feeling === "другое" ? customFeeling.trim() : undefined,
+          feeling === "other" ? customFeeling.trim() : undefined,
         rootWant,
         questions,
         intensityBefore,
@@ -113,7 +113,7 @@ export default function SessionPage() {
     situation.trim().length >= 3 && intensityBeforeInteracted;
   const canStep2 =
     feeling !== null &&
-    (feeling !== "другое" || customFeeling.trim().length > 0);
+    (feeling !== "other" || customFeeling.trim().length > 0);
   const canStep3 = rootWant !== null;
   const canStep4 =
     questions.allowToBe &&
@@ -146,7 +146,7 @@ export default function SessionPage() {
     }
     if (step === 2) {
       if (feeling === null) return "Выбери чувство";
-      if (feeling === "другое" && customFeeling.trim().length === 0)
+      if (feeling === "other" && customFeeling.trim().length === 0)
         return "Назови своё чувство";
     }
     if (step === 3) {
@@ -199,7 +199,7 @@ export default function SessionPage() {
             customFeeling={customFeeling}
             onFeeling={(f) => {
               setFeeling(f);
-              if (f !== "другое") setCustomFeeling("");
+              if (f !== "other") setCustomFeeling("");
             }}
             onCustomFeeling={setCustomFeeling}
           />

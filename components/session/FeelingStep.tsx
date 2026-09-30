@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { FEELINGS } from "@/lib/constants";
-import type { Feeling } from "@/lib/db";
+import { FEELING_LABEL_RU } from "@/lib/constants";
+import { FEELING_CODES, type Feeling } from "@/lib/feelings";
 
 interface Props {
   feeling: Feeling | null;
@@ -25,7 +25,7 @@ export function FeelingStep({
   }, []);
 
   useEffect(() => {
-    if (feeling === "другое") {
+    if (feeling === "other") {
       customRef.current?.focus({ preventScroll: true });
     }
   }, [feeling]);
@@ -40,7 +40,7 @@ export function FeelingStep({
       </div>
 
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Чувство">
-        {FEELINGS.map((f, i) => {
+        {FEELING_CODES.map((f, i) => {
           const active = feeling === f;
           return (
             <button
@@ -56,13 +56,13 @@ export function FeelingStep({
                   : "bg-surface text-primary"
               }`}
             >
-              {f}
+              {FEELING_LABEL_RU[f]}
             </button>
           );
         })}
       </div>
 
-      {feeling === "другое" && (
+      {feeling === "other" && (
         <input
           ref={customRef}
           value={customFeeling}
