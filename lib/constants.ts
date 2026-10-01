@@ -13,4 +13,4 @@ export const QUESTION_KEYS: (keyof SessionQuestions)[] = [
 ];
 
 export const APP_NAME = "Levia";
-export const APP_VERSION = "0.1.0";
+export const APP_VERSION = "0.2.0";

@@ -109,4 +109,12 @@ describe("feelingLabel", () => {
     expect(feelingLabel("other", undefined, labels)).toBe("label:other");
     expect(feelingLabel("other", "  ", labels)).toBe("label:other");
   });
+
+  // Запись, которую старая версия приложения создала уже после миграции базы
+  // (откат деплоя): upgrade второй раз не запустится, значение так и останется словом.
+  it("still labels a legacy Russian value written after the migration", () => {
+    expect(feelingLabel("тревога", undefined, labels)).toBe("label:anxiety");
+    expect(feelingLabel("другое", "усталость", labels)).toBe("усталость");
+    expect(feelingLabel("злость", undefined, labels)).toBe("злость");
+  });
 });
