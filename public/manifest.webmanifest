@@ -1,14 +1,14 @@
 {
-  "name": "Levia — практика отпускания",
+  "name": "Levia — emotional release practice",
   "short_name": "Levia",
-  "description": "Тихий дневник практики метода Седоны",
+  "description": "A quiet journal for letting go of difficult emotions",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f7f5f0",
   "theme_color": "#f7f5f0",
   "orientation": "portrait",
-  "lang": "ru",
+  "lang": "en",
   "icons": [
     {
       "src": "/icon-192.png",

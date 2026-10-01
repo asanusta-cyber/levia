@@ -81,12 +81,20 @@ function withCustom(feeling: Feeling, custom: string | undefined): NormalizedFee
   return custom === undefined ? { feeling } : { feeling, customFeeling: custom };
 }
 
-/** Подпись чувства для пилюль: своё слово для 'other', иначе подпись из словаря. */
+/**
+ * Подпись чувства для пилюль: своё слово для 'other', иначе подпись из словаря.
+ * Значение, которое не является кодом, сначала нормализуется. Так запись, созданная
+ * старой версией приложения уже после миграции базы (например, при откате деплоя),
+ * всё равно показывается правильно, а не пустой пилюлей.
+ */
 export function feelingLabel(
-  feeling: Feeling,
-  customFeeling: string | undefined,
+  rawFeeling: string,
+  rawCustom: string | undefined,
   labels: Record<Feeling, string>
 ): string {
+  const { feeling, customFeeling } = isFeelingCode(rawFeeling)
+    ? { feeling: rawFeeling, customFeeling: rawCustom }
+    : normalizeFeeling(rawFeeling, rawCustom);
   if (feeling === "other" && customFeeling && customFeeling.trim().length > 0) {
     return customFeeling;
   }
