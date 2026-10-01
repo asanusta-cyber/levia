@@ -143,20 +143,39 @@ describe("dictionaries", () => {
     ]);
   });
 
-  it("names the method and its author as agreed per language, Levia always in Latin", () => {
-    expect(dictionaries.en.settings.aboutText).toContain("Sedona Method");
-    expect(dictionaries.en.settings.aboutText).toContain("Lester Levenson");
-    expect(dictionaries.ru.settings.aboutText).toContain("Метод Седоны");
-    expect(dictionaries.ru.settings.aboutText).toContain("Левенсона");
-    expect(dictionaries.uk.settings.aboutText).toContain("Метод Седони");
-    expect(dictionaries.uk.settings.aboutText).toContain("Левенсона");
-    for (const locale of LOCALES) {
-      expect(dictionaries[locale].meta.title.startsWith("Levia — ")).toBe(true);
-    }
-    for (const locale of ["ru", "uk"] as const) {
-      const all = flatten(dictionaries[locale]).map(([, v]) => v).join("\n");
-      expect(all).not.toMatch(/Sedona|Levenson/);
-    }
+  describe("trademark and attribution", () => {
+    // «Sedona Method» — зарегистрированная марка Sedona Training Associates.
+    // Название метода упоминается только в About, рядом с пометкой о независимости.
+    const methodName = { en: "Sedona Method", ru: "метод Седоны", uk: "метод Седони" } as const;
+    const author = { en: "Lester Levenson", ru: "Лестера Левенсона", uk: "Лестера Левенсона" } as const;
+
+    it.each(LOCALES)("%s mentions the method name only in settings.aboutText", (locale) => {
+      const keys = flatten(dictionaries[locale])
+        .filter(([, v]) => v.toLowerCase().includes(methodName[locale].toLowerCase()))
+        .map(([k]) => k);
+      expect(keys).toEqual(["settings.aboutText"]);
+    });
+
+    it.each(LOCALES)("%s About states independence from Sedona Training Associates", (locale) => {
+      expect(dictionaries[locale].settings.aboutText).toContain("Sedona Training Associates");
+    });
+
+    it.each(LOCALES)("%s credits Lester Levenson's technique in the intro and About", (locale) => {
+      expect(dictionaries[locale].home.intro).toContain(author[locale]);
+      expect(dictionaries[locale].settings.aboutText).toContain(author[locale]);
+    });
+
+    it("keeps Levia in Latin and uses Latin in RU/UK only for the company name", () => {
+      for (const locale of LOCALES) {
+        expect(dictionaries[locale].meta.title.startsWith("Levia — ")).toBe(true);
+      }
+      for (const locale of ["ru", "uk"] as const) {
+        const all = flatten(dictionaries[locale])
+          .map(([, v]) => v.replaceAll("Sedona Training Associates", ""))
+          .join("\n");
+        expect(all).not.toMatch(/Sedona|Levenson/);
+      }
+    });
   });
 
   it("does not bring back the gendered forms that were rewritten", () => {

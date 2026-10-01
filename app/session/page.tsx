@@ -11,6 +11,7 @@ import { QuestionsStep } from "@/components/session/QuestionsStep";
 import { ReflectionStep } from "@/components/session/ReflectionStep";
 import { setToast } from "@/components/ui/Toast";
 import { createSession, type Feeling, type RootWant, type SessionQuestions } from "@/lib/db";
+import { useI18n } from "@/lib/i18n/LocaleProvider";
 
 type Step = 1 | 2 | 3 | 4 | 5;
 const TOTAL: 5 = 5;
@@ -24,6 +25,7 @@ const EMPTY_QUESTIONS: SessionQuestions = {
 
 export default function SessionPage() {
   const router = useRouter();
+  const { t, fmt } = useI18n();
 
   const [step, setStep] = useState<Step>(1);
 
@@ -93,10 +95,10 @@ export default function SessionPage() {
         intensityAfter,
         reflection: reflection.trim(),
       });
-      setToast("Сессия сохранена");
+      setToast(t.session.saved);
       router.push("/");
     } catch (err) {
-      console.error("Не удалось сохранить сессию", err);
+      console.error("save failed", err);
       setSaving(false);
     }
   }
@@ -135,29 +137,28 @@ export default function SessionPage() {
               ? canStep5
               : false;
 
-  const nextLabel = step === 5 ? "Завершить сессию" : "Дальше";
+  const nextLabel = step === 5 ? t.session.finish : t.session.next;
 
   function getNextHint(): string | null {
     if (canNext) return null;
+    const hint = t.session.hint;
     if (step === 1) {
-      if (situation.trim().length < 3) return "Опиши ситуацию, чтобы продолжить";
-      if (!intensityBeforeInteracted)
-        return "Дотронься до ползунка, чтобы зафиксировать интенсивность";
+      if (situation.trim().length < 3) return hint.describeSituation;
+      if (!intensityBeforeInteracted) return hint.moveSlider;
     }
     if (step === 2) {
-      if (feeling === null) return "Выбери чувство";
+      if (feeling === null) return hint.chooseFeeling;
       if (feeling === "other" && customFeeling.trim().length === 0)
-        return "Назови своё чувство";
+        return hint.nameFeeling;
     }
     if (step === 3) {
-      if (rootWant === null) return "Выбери одно из трёх";
+      if (rootWant === null) return hint.chooseWant;
     }
     if (step === 4) {
-      return "Отметь все четыре, когда внутренний ответ найден";
+      return hint.checkAll;
     }
     if (step === 5) {
-      if (!intensityAfterInteracted)
-        return "Дотронься до ползунка, чтобы зафиксировать интенсивность";
+      if (!intensityAfterInteracted) return hint.moveSlider;
     }
     return null;
   }
@@ -171,14 +172,18 @@ export default function SessionPage() {
     <div className="flex flex-col gap-6">
       <header className="flex items-center justify-between text-sm">
         <button type="button" onClick={goBack} className="text-muted">
-          ‹ назад
+          {t.common.back}
         </button>
         <span className="text-muted tabular-nums">
           {step} / {TOTAL}
         </span>
       </header>
 
-      <ProgressDots current={step} total={TOTAL} />
+      <ProgressDots
+        current={step}
+        total={TOTAL}
+        label={fmt(t.session.stepOf, { current: step, total: TOTAL })}
+      />
 
       <div key={step} className="animate-fade-in">
         {step === 1 && (
@@ -231,7 +236,7 @@ export default function SessionPage() {
           disabled={!canNext || saving}
           className="rounded-lg bg-accent px-6 py-4 text-center text-base font-medium text-accent-fg transition active:opacity-80 disabled:opacity-40"
         >
-          {saving ? "Сохраняю…" : nextLabel}
+          {saving ? t.session.saving : nextLabel}
         </button>
         <p
           className="min-h-5 text-center text-2xs text-tertiary"
@@ -243,10 +248,10 @@ export default function SessionPage() {
 
       <ConfirmDialog
         open={confirmExitOpen}
-        title="Прервать сессию?"
-        description="Введённое не сохранится."
-        confirmLabel="Прервать"
-        cancelLabel="Продолжить"
+        title={t.session.exit.title}
+        description={t.session.exit.description}
+        confirmLabel={t.session.exit.confirm}
+        cancelLabel={t.session.exit.cancel}
         destructive
         onCancel={() => setConfirmExitOpen(false)}
         onConfirm={() => {

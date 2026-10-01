@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { QUESTIONS } from "@/lib/constants";
+import { QUESTION_KEYS } from "@/lib/constants";
 import type { SessionQuestions } from "@/lib/db";
+import { useI18n } from "@/lib/i18n/LocaleProvider";
 
 interface Props {
   questions: SessionQuestions;
@@ -17,11 +18,13 @@ interface Props {
  * Текущий индекс выводится из `questions`: число подряд идущих true с начала.
  */
 export function QuestionsStep({ questions, onMark }: Props) {
+  const { t } = useI18n();
+
   // Cколько подряд идущих с начала true. Поскольку флаги ставятся только в порядке,
   // это и количество пройденных, и индекс текущего.
-  const passedCount = QUESTIONS.findIndex((q) => !questions[q.key]);
-  const passedTotal = passedCount === -1 ? QUESTIONS.length : passedCount;
-  const currentIndex = passedTotal < QUESTIONS.length ? passedTotal : -1;
+  const passedCount = QUESTION_KEYS.findIndex((key) => !questions[key]);
+  const passedTotal = passedCount === -1 ? QUESTION_KEYS.length : passedCount;
+  const currentIndex = passedTotal < QUESTION_KEYS.length ? passedTotal : -1;
 
   const currentRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -31,15 +34,13 @@ export function QuestionsStep({ questions, onMark }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h2 className="text-lg font-medium">Пройди четыре вопроса</h2>
-        <p className="text-sm text-muted">
-          Не торопись. Спроси себя честно — отметь, когда внутренний ответ
-          найден.
-        </p>
+        <h2 className="text-lg font-medium">{t.questions.title}</h2>
+        <p className="text-sm text-muted">{t.questions.subtitle}</p>
       </div>
 
       <div className="flex flex-col gap-3">
-        {QUESTIONS.map((q, i) => {
+        {QUESTION_KEYS.map((key, i) => {
+          const q = { key, ...t.questions.items[key] };
           const isPassed = i < passedTotal;
           const isCurrent = i === currentIndex;
           const isFuture = !isPassed && !isCurrent;
@@ -69,7 +70,7 @@ export function QuestionsStep({ questions, onMark }: Props) {
                 }`}
                 aria-hidden
               >
-                {isPassed && <CheckIcon />}
+                {isPassed && <CheckIcon label={t.questions.checked} />}
               </span>
               <span className="flex flex-col gap-0.5">
                 <span className="text-sm font-medium">{q.question}</span>
@@ -85,7 +86,7 @@ export function QuestionsStep({ questions, onMark }: Props) {
   );
 }
 
-function CheckIcon() {
+function CheckIcon({ label }: { label: string }) {
   return (
     <svg
       width="14"
@@ -93,7 +94,7 @@ function CheckIcon() {
       viewBox="0 0 14 14"
       fill="none"
       role="img"
-      aria-label="отмечено"
+      aria-label={label}
     >
       <path
         d="M3 7L6 10L11 4"

@@ -38,9 +38,22 @@ function pluralSamples(locale, forms) {
   return out.join(" · ");
 }
 
+// Подсказка шага 3: { situation, want }. want — код, его не переводят,
+// поэтому он уходит в ключ строки, а в ячейку — только текст ситуации.
+function isWantHint(value) {
+  // Обе строки обязательны: у самого словаря тоже есть разделы situation и want.
+  return (
+    value &&
+    typeof value === "object" &&
+    typeof value.situation === "string" &&
+    typeof value.want === "string"
+  );
+}
+
 function flatten(value, locale, path = "") {
   if (typeof value === "string") return [[path, value]];
   if (isPluralForms(value)) return [[path, pluralSamples(locale, value)]];
+  if (isWantHint(value)) return [[`${path} → ${value.want}`, value.situation]];
   if (Array.isArray(value)) {
     return value.flatMap((v, i) => flatten(v, locale, `${path}.${i + 1}`));
   }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { IntensitySlider } from "@/components/ui/IntensitySlider";
+import { useI18n } from "@/lib/i18n/LocaleProvider";
 
 interface Props {
   intensityAfter: number;
@@ -18,6 +19,7 @@ export function ReflectionStep({
   onIntensity,
   onReflection,
 }: Props) {
+  const { t } = useI18n();
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     ref.current?.focus({ preventScroll: true });
@@ -26,20 +28,17 @@ export function ReflectionStep({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h2 className="text-lg font-medium">Что изменилось?</h2>
-        <p className="text-sm text-muted">
-          Что в теле, голове, дыхании теперь? Если ничего — это тоже валидный
-          ответ.
-        </p>
+        <h2 className="text-lg font-medium">{t.reflection.title}</h2>
+        <p className="text-sm text-muted">{t.reflection.subtitle}</p>
       </div>
 
       <div className="flex flex-col gap-3 rounded-lg bg-surface p-4">
-        <div className="text-sm text-muted">Насколько сильно теперь?</div>
+        <div className="text-sm text-muted">{t.reflection.intensityQuestion}</div>
         <IntensitySlider
           value={intensityAfter}
           dimmed={!hasInteracted}
           onChange={onIntensity}
-          ariaLabel="Интенсивность теперь"
+          ariaLabel={t.reflection.intensityLabel}
         />
       </div>
 
@@ -47,10 +46,10 @@ export function ReflectionStep({
         ref={ref}
         value={reflection}
         onChange={(e) => onReflection(e.target.value)}
-        placeholder="Например: дыхание стало глубже, плечи отпустило"
+        placeholder={t.reflection.placeholder}
         rows={4}
         className="min-h-32 w-full resize-none rounded-lg bg-surface p-4 text-base placeholder:text-tertiary focus:outline-none focus:ring-1 focus:ring-border"
-        aria-label="Что изменилось"
+        aria-label={t.reflection.fieldLabel}
       />
     </div>
   );

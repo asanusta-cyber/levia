@@ -25,6 +25,14 @@ export async function buildBackup(now: number = Date.now()): Promise<BackupFile>
   };
 }
 
+/** Имя файла бэкапа: levia-backup-2026-05-01.json. Не локализуется. */
+export function backupFilename(date: Date = new Date()): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `levia-backup-${y}-${m}-${d}.json`;
+}
+
 /**
  * Достаёт массив записей из разобранного JSON. Принимает и обёрнутый формат
  * ({ version, sessions: [...] }) любой версии, и сырой массив.

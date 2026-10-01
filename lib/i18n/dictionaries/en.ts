@@ -14,7 +14,7 @@ import type { PluralForms } from "../types";
 export const en = {
   meta: {
     title: "Levia — emotional release practice",
-    description: "A quiet journal for practicing the Sedona Method",
+    description: "A quiet journal for letting go of difficult emotions",
   },
 
   common: {
@@ -41,7 +41,7 @@ export const en = {
     startNote: "10 minutes · 5 steps",
     introLabel: "About the method",
     intro:
-      "The Sedona Method is a simple practice for letting go of difficult emotions. Each session takes 5–10 minutes. Start your first one and see how it works.",
+      "Levia is built on Lester Levenson's releasing technique — a simple practice for letting go of difficult emotions. Each session takes 5–10 minutes. Start your first one and see how it works.",
   },
 
   session: {
@@ -153,7 +153,7 @@ export const en = {
       },
       canRelease: {
         question: "Could I let it go?",
-        hint: "The way you'd open your hand around something hot — no struggle.",
+        hint: "The way you'd let go of something hot in your hand — without a struggle.",
       },
       readyToRelease: {
         question: "Would I let it go?",
@@ -185,7 +185,7 @@ export const en = {
     back: "‹ history",
     duration: "Duration: {duration}",
     situation: "Situation",
-    feelingAndWant: "Feeling and want",
+    feelingAndWant: "Feeling and underlying want",
     questions: "Four questions",
     intensity: "Intensity",
     beforeAfter: "Before → After",
@@ -229,7 +229,7 @@ export const en = {
     } as PluralForms,
     about: "About",
     aboutText:
-      "The Sedona Method, created by Lester Levenson, is a simple practice for letting go of difficult emotions in five steps: name the situation, find the feeling, see the underlying want, go through four inner questions, and notice what has changed.",
+      "Levia is based on the releasing technique developed by Lester Levenson, later taught as the Sedona Method. Each session follows five steps: name the situation, find the feeling, see the underlying want, go through four inner questions, and notice what has changed. Levia is an independent app, not affiliated with Sedona Training Associates.",
   },
 
   duration: {

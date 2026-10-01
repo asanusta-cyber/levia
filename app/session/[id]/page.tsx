@@ -4,9 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { deleteSession, getSession, type Session } from "@/lib/db";
-import { FEELING_LABEL_RU, QUESTIONS, ROOT_WANT_LABEL } from "@/lib/constants";
+import { QUESTION_KEYS } from "@/lib/constants";
 import { feelingLabel } from "@/lib/feelings";
-import { formatDuration, formatFullDateTime } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/LocaleProvider";
+import { formatDuration, formatFullDateTime } from "@/lib/i18n/format";
 import { Pill } from "@/components/ui/Pill";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { setToast } from "@/components/ui/Toast";
@@ -22,6 +23,7 @@ export default function SessionDetailPage({
   params: { id: string };
 }) {
   const router = useRouter();
+  const { t, fmt, formatLocale } = useI18n();
   const idNum = Number(params.id);
 
   const [state, setState] = useState<State>({ status: "loading" });
@@ -54,10 +56,10 @@ export default function SessionDetailPage({
     setDeleting(true);
     try {
       await deleteSession(state.session.id!);
-      setToast("Сессия удалена");
+      setToast(t.detail.deleted);
       router.push("/history");
     } catch (err) {
-      console.error("Не удалось удалить сессию", err);
+      console.error("delete failed", err);
       setDeleting(false);
     }
   }
@@ -75,13 +77,13 @@ export default function SessionDetailPage({
       <div className="flex flex-col gap-6">
         <BackHeader />
         <div className="rounded-lg bg-secondary p-4 text-sm text-muted">
-          Сессия не найдена. Возможно, она была удалена.
+          {t.detail.notFound}
         </div>
         <Link
           href="/history"
           className="rounded-lg bg-accent px-6 py-4 text-center text-base font-medium text-accent-fg"
         >
-          Вернуться к истории
+          {t.detail.backToHistory}
         </Link>
       </div>
     );
@@ -96,55 +98,57 @@ export default function SessionDetailPage({
         ? "text-muted"
         : "text-primary";
 
-  const label = feelingLabel(s.feeling, s.customFeeling, FEELING_LABEL_RU);
+  const label = feelingLabel(s.feeling, s.customFeeling, t.feelings);
 
   return (
     <div className="flex flex-col gap-6">
       <header className="flex items-center justify-between gap-2">
         <Link href="/history" className="shrink-0 text-sm text-muted">
-          ‹ история
+          {t.detail.back}
         </Link>
         <span className="truncate text-right text-sm text-muted">
-          {formatFullDateTime(s.createdAt)}
+          {formatFullDateTime(s.createdAt, formatLocale)}
         </span>
       </header>
 
       <p className="-mt-3 text-2xs text-tertiary">
-        Длительность: {formatDuration(s.durationSeconds)}
+        {fmt(t.detail.duration, {
+          duration: formatDuration(s.durationSeconds, t.duration),
+        })}
       </p>
 
-      <Section title="Ситуация">
+      <Section title={t.detail.situation}>
         <p className="rounded-lg bg-surface p-4 text-sm leading-relaxed">
           {s.situation}
         </p>
       </Section>
 
-      <Section title="Чувство и хочу">
+      <Section title={t.detail.feelingAndWant}>
         <div className="flex flex-wrap gap-2">
           <Pill>{label}</Pill>
-          {s.rootWant && <Pill>{ROOT_WANT_LABEL[s.rootWant]}</Pill>}
+          {s.rootWant && <Pill>{t.rootWants[s.rootWant].label}</Pill>}
         </div>
       </Section>
 
-      <Section title="Четыре вопроса">
+      <Section title={t.detail.questions}>
         <ul className="flex flex-col gap-2">
-          {QUESTIONS.map((q) => (
-            <li key={q.key} className="flex items-start gap-2 text-sm">
+          {QUESTION_KEYS.map((key) => (
+            <li key={key} className="flex items-start gap-2 text-sm">
               <span
                 className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded text-success-text"
                 aria-hidden
               >
                 <CheckIcon />
               </span>
-              <span>{q.question}</span>
+              <span>{t.questions.items[key].question}</span>
             </li>
           ))}
         </ul>
       </Section>
 
-      <Section title="Интенсивность">
+      <Section title={t.detail.intensity}>
         <div className="flex items-baseline justify-between gap-3 rounded-lg bg-surface p-4">
-          <span className="text-sm text-muted">До → После</span>
+          <span className="text-sm text-muted">{t.detail.beforeAfter}</span>
           <span className={`text-md font-medium tabular-nums ${deltaClass}`}>
             {s.intensityBefore} → {s.intensityAfter}
           </span>
@@ -152,7 +156,7 @@ export default function SessionDetailPage({
       </Section>
 
       {s.reflection && (
-        <Section title="Что изменилось">
+        <Section title={t.detail.changed}>
           <p className="rounded-lg bg-surface p-4 text-sm leading-relaxed">
             {s.reflection}
           </p>
@@ -166,15 +170,15 @@ export default function SessionDetailPage({
         className="mt-4 flex items-center justify-center gap-2 self-center text-sm text-destructive transition active:opacity-80 disabled:opacity-40"
       >
         <TrashIcon />
-        {deleting ? "Удаляю…" : "Удалить сессию"}
+        {deleting ? t.detail.deleting : t.detail.delete}
       </button>
 
       <ConfirmDialog
         open={confirmOpen}
-        title="Удалить эту сессию?"
-        description="Это действие нельзя отменить."
-        confirmLabel="Удалить"
-        cancelLabel="Отмена"
+        title={t.detail.confirm.title}
+        description={t.detail.confirm.description}
+        confirmLabel={t.detail.confirm.confirm}
+        cancelLabel={t.detail.confirm.cancel}
         destructive
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => {
@@ -187,10 +191,11 @@ export default function SessionDetailPage({
 }
 
 function BackHeader() {
+  const { t } = useI18n();
   return (
     <header className="flex items-center justify-between text-sm">
       <Link href="/history" className="text-muted">
-        ‹ история
+        {t.detail.back}
       </Link>
     </header>
   );
