@@ -1,9 +1,11 @@
 interface Props {
   current: number;
   total?: number;
+  /** Уже переведённая подпись для скринридеров, например «Шаг 2 из 5». */
+  label: string;
 }
 
-export function ProgressDots({ current, total = 5 }: Props) {
+export function ProgressDots({ current, total = 5, label }: Props) {
   return (
     <div
       className="flex gap-1.5"
@@ -11,7 +13,7 @@ export function ProgressDots({ current, total = 5 }: Props) {
       aria-valuemin={1}
       aria-valuemax={total}
       aria-valuenow={current}
-      aria-label={`Шаг ${current} из ${total}`}
+      aria-label={label}
     >
       {Array.from({ length: total }).map((_, i) => {
         const filled = i < current;

@@ -4,12 +4,21 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { countSessions, importSessions, type ImportResult } from "@/lib/db";
-import { buildBackup, extractBackupSessions } from "@/lib/backup";
-import { ABOUT_TEXT, APP_NAME, APP_VERSION } from "@/lib/constants";
-import { backupFilename, pluralRu } from "@/lib/format";
+import {
+  backupFilename,
+  buildBackup,
+  extractBackupSessions,
+} from "@/lib/backup";
+import { APP_NAME, APP_VERSION } from "@/lib/constants";
+import { LOCALES, LOCALE_NAMES } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
+import { fmt } from "@/lib/i18n/format";
+import { useI18n } from "@/lib/i18n/LocaleProvider";
+import type { PluralForms } from "@/lib/i18n/types";
 import { Toast, setToast } from "@/components/ui/Toast";
 
 export default function SettingsPage() {
+  const { t, locale, setLocale, plural } = useI18n();
   const total = useLiveQuery(() => countSessions());
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -17,7 +26,7 @@ export default function SettingsPage() {
   const [importingState, setImporting] = useState(false);
 
   const canExport = total !== undefined && total > 0;
-  const exportHint = total === 0 ? "Сначала добавь хотя бы одну сессию" : null;
+  const exportHint = total === 0 ? t.settings.exportHint : null;
 
   async function handleExport() {
     if (exporting || !canExport) return;
@@ -34,10 +43,10 @@ export default function SettingsPage() {
       a.remove();
       // даём браузеру время инициировать загрузку, потом отзываем url
       setTimeout(() => URL.revokeObjectURL(url), 1500);
-      setToast("Файл скачан");
+      setToast(t.settings.exportDone);
     } catch (err) {
       console.error("export failed", err);
-      setToast("Не удалось создать файл");
+      setToast(t.settings.exportFailed);
     } finally {
       setExporting(false);
     }
@@ -55,21 +64,21 @@ export default function SettingsPage() {
       try {
         parsed = JSON.parse(text);
       } catch {
-        setToast("Файл не распознан как бэкап Levia");
+        setToast(t.settings.notBackup);
         return;
       }
 
       const items = extractBackupSessions(parsed);
       if (items === null) {
-        setToast("Файл не распознан как бэкап Levia");
+        setToast(t.settings.notBackup);
         return;
       }
 
       const result = await importSessions(items);
-      setToast(buildImportToast(result));
+      setToast(buildImportToast(result, t.settings, plural));
     } catch (err) {
       console.error("import failed", err);
-      setToast("Не удалось импортировать данные");
+      setToast(t.settings.importFailed);
     } finally {
       setImporting(false);
     }
@@ -81,15 +90,49 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-6">
         <header className="flex items-center justify-between">
           <Link href="/" className="text-sm text-muted">
-            ‹ назад
+            {t.common.back}
           </Link>
-          <h1 className="text-md font-medium">Настройки</h1>
+          <h1 className="text-md font-medium">{t.settings.title}</h1>
           <span className="w-12" aria-hidden />
         </header>
 
         <section className="flex flex-col gap-2">
+          <h2
+            id="language-heading"
+            className="text-2xs uppercase tracking-wide text-tertiary"
+          >
+            {t.settings.language}
+          </h2>
+          <div
+            role="radiogroup"
+            aria-labelledby="language-heading"
+            className="grid grid-cols-3 gap-2"
+          >
+            {LOCALES.map((code) => {
+              const active = code === locale;
+              return (
+                <button
+                  key={code}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  // Название языка — на самом языке, скринридер читает его с нужным произношением.
+                  lang={code}
+                  onClick={() => setLocale(code)}
+                  className={`rounded-lg px-3 py-3 text-sm transition active:opacity-80 ${
+                    active ? "bg-accent text-accent-fg" : "bg-surface text-primary"
+                  }`}
+                >
+                  {LOCALE_NAMES[code]}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-2">
           <h2 className="text-2xs uppercase tracking-wide text-tertiary">
-            Резервная копия
+            {t.settings.backup}
           </h2>
 
           <button
@@ -98,7 +141,7 @@ export default function SettingsPage() {
             disabled={!canExport || exporting}
             className="rounded-lg bg-surface px-4 py-3 text-left text-sm transition active:opacity-80 disabled:opacity-40"
           >
-            {exporting ? "Готовлю файл…" : "Экспортировать все данные (JSON)"}
+            {exporting ? t.settings.exporting : t.settings.export}
           </button>
           {exportHint && (
             <p className="text-2xs text-tertiary">{exportHint}</p>
@@ -110,7 +153,7 @@ export default function SettingsPage() {
             disabled={importingState}
             className="rounded-lg bg-surface px-4 py-3 text-left text-sm transition active:opacity-80 disabled:opacity-40"
           >
-            {importingState ? "Импортирую…" : "Импортировать данные"}
+            {importingState ? t.settings.importing : t.settings.import}
           </button>
           <input
             ref={fileRef}
@@ -128,9 +171,9 @@ export default function SettingsPage() {
 
         <section className="flex flex-col gap-2">
           <h2 className="text-2xs uppercase tracking-wide text-tertiary">
-            О приложении
+            {t.settings.about}
           </h2>
-          <p className="text-sm leading-relaxed">{ABOUT_TEXT}</p>
+          <p className="text-sm leading-relaxed">{t.settings.aboutText}</p>
           <p className="text-2xs text-tertiary">
             {APP_NAME} · v{APP_VERSION}
           </p>
@@ -140,41 +183,19 @@ export default function SettingsPage() {
   );
 }
 
-const SESSION_FORMS: [string, string, string] = [
-  "сессия",
-  "сессии",
-  "сессий",
-];
-const INVALID_FORMS: [string, string, string] = [
-  "невалидная запись",
-  "невалидные записи",
-  "невалидных записей",
-];
-const EXIST_VERB_FORMS: [string, string, string] = [
-  "уже существует",
-  "уже существуют",
-  "уже существуют",
-];
-
-function buildImportToast(r: ImportResult): string {
+function buildImportToast(
+  r: ImportResult,
+  s: Dictionary["settings"],
+  plural: (forms: PluralForms, count: number) => string
+): string {
   const { added, duplicate, invalid } = r;
   if (added === 0 && duplicate === 0 && invalid === 0) {
-    return "Нечего импортировать";
+    return s.importNothing;
   }
 
   const parts: string[] = [];
-  if (added > 0) {
-    parts.push(`Добавлено ${added} ${pluralRu(added, SESSION_FORMS)}`);
-  } else {
-    parts.push("Ничего не добавлено");
-  }
-  if (duplicate > 0) {
-    parts.push(
-      `пропущено ${duplicate} (${pluralRu(duplicate, EXIST_VERB_FORMS)})`
-    );
-  }
-  if (invalid > 0) {
-    parts.push(`${invalid} ${pluralRu(invalid, INVALID_FORMS)}`);
-  }
+  parts.push(added > 0 ? plural(s.importAdded, added) : s.importNoneAdded);
+  if (duplicate > 0) parts.push(fmt(s.importDuplicates, { count: duplicate }));
+  if (invalid > 0) parts.push(plural(s.importInvalid, invalid));
   return parts.join(", ");
 }

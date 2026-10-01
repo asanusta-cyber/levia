@@ -9,19 +9,19 @@ import {
   lastSession,
   type Session,
 } from "@/lib/db";
-import { FEELING_LABEL_RU, ROOT_WANT_LABEL } from "@/lib/constants";
 import { feelingLabel } from "@/lib/feelings";
+import { useI18n } from "@/lib/i18n/LocaleProvider";
 import {
-  daysWord,
   formatTodayHeading,
-  greeting,
+  greetingKey,
   relativeDay,
-  sessionsWord,
-} from "@/lib/format";
+} from "@/lib/i18n/format";
 import { Pill } from "@/components/ui/Pill";
 import { Toast } from "@/components/ui/Toast";
 
 export default function HomePage() {
+  const { t, plural, formatLocale } = useI18n();
+
   // Дата считается на клиенте, чтобы избежать SSR-рассинхрона.
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
@@ -42,30 +42,32 @@ export default function HomePage() {
       <header className="flex min-h-16 flex-col gap-1">
         {now && (
           <>
-            <p className="text-sm text-muted">{formatTodayHeading(now)}</p>
-            <h1 className="text-lg font-medium">{greeting(now)}</h1>
+            <p className="text-sm text-muted">
+              {formatTodayHeading(now, formatLocale)}
+            </p>
+            <h1 className="text-lg font-medium">{t.greeting[greetingKey(now)]}</h1>
           </>
         )}
       </header>
 
       {hasAny && (
         <section
-          aria-label="Статистика"
+          aria-label={t.home.statsLabel}
           className="grid grid-cols-2 items-stretch gap-3"
         >
           {streak !== undefined && streak > 0 ? (
             <StatCard
               value={streak}
-              unit={daysWord(streak)}
-              caption="серия"
+              unit={plural(t.home.daysUnit, streak)}
+              caption={t.home.streakCaption}
             />
           ) : (
-            <NewStreakCard />
+            <NewStreakCard text={t.home.newStreak} />
           )}
           <StatCard
             value={total!}
-            unit={sessionsWord(total!)}
-            caption="всего"
+            unit={plural(t.home.sessionsUnit, total!)}
+            caption={t.home.totalCaption}
           />
         </section>
       )}
@@ -81,14 +83,14 @@ export default function HomePage() {
           href="/session"
           className="rounded-lg bg-accent px-6 py-4 text-center text-base font-medium text-accent-fg transition active:opacity-80"
         >
-          Начать сессию
+          {t.home.start}
         </Link>
-        <p className="text-center text-2xs text-tertiary">10 минут · 5 шагов</p>
+        <p className="text-center text-2xs text-tertiary">{t.home.startNote}</p>
       </div>
 
       <nav className="mt-2 flex justify-center gap-6 text-sm text-muted">
-        <Link href="/history">История</Link>
-        <Link href="/settings">Настройки</Link>
+        <Link href="/history">{t.common.history}</Link>
+        <Link href="/settings">{t.common.settings}</Link>
       </nav>
     </div>
     </>
@@ -115,24 +117,20 @@ function StatCard({
   );
 }
 
-function NewStreakCard() {
+function NewStreakCard({ text }: { text: string }) {
   return (
     <div className="flex h-full flex-col justify-center rounded-lg bg-secondary p-4">
-      <div className="text-sm font-medium">Начни</div>
-      <div className="text-sm font-medium">новую серию</div>
+      <div className="whitespace-pre-line text-sm font-medium">{text}</div>
     </div>
   );
 }
 
 function LastSessionCard({ session, now }: { session: Session; now: Date }) {
+  const { t, formatLocale } = useI18n();
   const delta = session.intensityAfter - session.intensityBefore;
   const deltaClass = delta < 0 ? "text-success-text" : "text-muted";
 
-  const label = feelingLabel(
-    session.feeling,
-    session.customFeeling,
-    FEELING_LABEL_RU
-  );
+  const label = feelingLabel(session.feeling, session.customFeeling, t.feelings);
 
   return (
     <Link
@@ -141,7 +139,7 @@ function LastSessionCard({ session, now }: { session: Session; now: Date }) {
     >
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-2xs text-muted">
-          {relativeDay(session.createdAt, now)}
+          {relativeDay(session.createdAt, now, formatLocale)}
         </span>
         <span className={`text-2xs tabular-nums ${deltaClass}`}>
           {session.intensityBefore} → {session.intensityAfter}
@@ -150,18 +148,18 @@ function LastSessionCard({ session, now }: { session: Session; now: Date }) {
       <div className="truncate text-sm">{session.situation}</div>
       <div className="flex flex-wrap gap-1.5">
         <Pill>{label}</Pill>
-        {session.rootWant && <Pill>{ROOT_WANT_LABEL[session.rootWant]}</Pill>}
+        {session.rootWant && <Pill>{t.rootWants[session.rootWant].label}</Pill>}
       </div>
     </Link>
   );
 }
 
 function EmptyStateCard() {
+  const { t } = useI18n();
   return (
-    <section aria-label="Подсказка">
+    <section aria-label={t.home.introLabel}>
       <div className="rounded-lg bg-secondary p-4 text-sm leading-relaxed text-muted">
-        Метод Седоны — простая практика отпускания тяжёлых эмоций. Каждая
-        сессия занимает 5–10 минут. Начни первую — увидишь, как это работает.
+        {t.home.intro}
       </div>
     </section>
   );

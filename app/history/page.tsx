@@ -1,42 +1,53 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { listSessions, type Session } from "@/lib/db";
 import { groupByDay, type DayGroup as DayGroupT } from "@/lib/stats";
-import { currentMonthLabel, formatTime, relativeDay } from "@/lib/format";
-import { FEELING_LABEL_RU, ROOT_WANT_LABEL } from "@/lib/constants";
 import { feelingLabel } from "@/lib/feelings";
+import { useI18n } from "@/lib/i18n/LocaleProvider";
+import { formatMonthYear, formatTime, relativeDay } from "@/lib/i18n/format";
 import { Pill } from "@/components/ui/Pill";
 import { Toast } from "@/components/ui/Toast";
 
 export default function HistoryPage() {
+  const { t, formatLocale } = useI18n();
   const sessions = useLiveQuery(() => listSessions());
-  const now = new Date();
 
-  const isLoading = sessions === undefined;
-  const isEmpty = !isLoading && sessions.length === 0;
+  // «Сейчас» — только на клиенте: у сервера своя таймзона, и на границе месяца
+  // заголовок с сервера не совпал бы с клиентским.
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+  }, []);
+
+  const isLoading = sessions === undefined || now === null;
+  const isEmpty = sessions !== undefined && sessions.length === 0;
   const groups = !isLoading && !isEmpty ? groupByDay(sessions) : [];
 
   return (
     <>
       <Toast />
       <div className="flex flex-col gap-6">
-        <header className="flex items-center justify-between">
-          <Link href="/" className="text-sm text-muted">
-            ‹ назад
+        {/* Три колонки: заголовок по центру не сдвигается, когда появляется месяц. */}
+        <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <Link href="/" className="justify-self-start text-sm text-muted">
+            {t.common.back}
           </Link>
-          <h1 className="text-md font-medium">История</h1>
-          <span className="text-sm text-muted">{currentMonthLabel(now)}</span>
+          <h1 className="text-md font-medium">{t.history.title}</h1>
+          <span className="justify-self-end text-sm text-muted">
+            {now ? formatMonthYear(now, formatLocale) : ""}
+          </span>
         </header>
 
         {isEmpty && (
           <div className="rounded-lg bg-secondary p-4 text-sm text-muted">
-            Здесь будут появляться твои сессии. Начни первую с главного экрана.
+            {t.history.empty}
           </div>
         )}
 
-        {!isLoading && !isEmpty && (
+        {now && !isLoading && !isEmpty && (
           <div className="flex flex-col gap-6">
             {groups.map((g) => (
               <DayGroup key={g.key} group={g} now={now} />
@@ -49,10 +60,11 @@ export default function HistoryPage() {
 }
 
 function DayGroup({ group, now }: { group: DayGroupT; now: Date }) {
+  const { formatLocale } = useI18n();
   return (
     <section className="flex flex-col gap-2">
       <h2 className="text-2xs uppercase tracking-wide text-tertiary">
-        {relativeDay(group.ts, now)}
+        {relativeDay(group.ts, now, formatLocale)}
       </h2>
       <div className="flex flex-col gap-2">
         {group.sessions.map((s) => (
@@ -64,15 +76,12 @@ function DayGroup({ group, now }: { group: DayGroupT; now: Date }) {
 }
 
 function SessionRow({ session }: { session: Session }) {
+  const { t, formatLocale } = useI18n();
   const delta = session.intensityAfter - session.intensityBefore;
   const deltaClass =
     delta < 0 ? "text-success-text" : delta === 0 ? "text-muted" : "text-primary";
 
-  const label = feelingLabel(
-    session.feeling,
-    session.customFeeling,
-    FEELING_LABEL_RU
-  );
+  const label = feelingLabel(session.feeling, session.customFeeling, t.feelings);
 
   return (
     <Link
@@ -81,7 +90,7 @@ function SessionRow({ session }: { session: Session }) {
     >
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-2xs text-muted tabular-nums">
-          {formatTime(session.createdAt)}
+          {formatTime(session.createdAt, formatLocale)}
         </span>
         <span className={`text-2xs tabular-nums ${deltaClass}`}>
           {session.intensityBefore} → {session.intensityAfter}
@@ -90,7 +99,7 @@ function SessionRow({ session }: { session: Session }) {
       <div className="line-clamp-2 text-sm">{session.situation}</div>
       <div className="flex flex-wrap gap-1.5">
         <Pill>{label}</Pill>
-        {session.rootWant && <Pill>{ROOT_WANT_LABEL[session.rootWant]}</Pill>}
+        {session.rootWant && <Pill>{t.rootWants[session.rootWant].label}</Pill>}
       </div>
     </Link>
   );

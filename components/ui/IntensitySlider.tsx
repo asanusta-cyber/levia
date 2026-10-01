@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/LocaleProvider";
+
 interface Props {
   value: number;
   onChange: (v: number) => void;
@@ -18,6 +20,7 @@ export function IntensitySlider({
   ariaLabel,
   dimmed = false,
 }: Props) {
+  const { t, fmt } = useI18n();
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-baseline justify-center gap-2">
@@ -28,7 +31,7 @@ export function IntensitySlider({
         >
           {value}
         </span>
-        <span className="text-sm text-muted">из {max}</span>
+        <span className="text-sm text-muted">{fmt(t.intensity.outOf, { max })}</span>
       </div>
       <input
         type="range"
@@ -38,14 +41,14 @@ export function IntensitySlider({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full accent-primary"
-        aria-label={ariaLabel ?? "Интенсивность"}
+        aria-label={ariaLabel ?? t.intensity.label}
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}
       />
       <div className="flex justify-between text-2xs text-tertiary">
-        <span>тише</span>
-        <span>сильнее</span>
+        <span>{t.intensity.milder}</span>
+        <span>{t.intensity.stronger}</span>
       </div>
     </div>
   );
